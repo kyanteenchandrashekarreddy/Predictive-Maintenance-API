@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Predictive Maintenance Monitor</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            background: #f4f4f4;
+        }
+
+        .status-box {
+            padding: 50px;
+            margin: 20px auto;
+            width: 300px;
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            transition: 0.5s;
+        }
+
+        .normal {
+            background: #27ae60;
+        }
+
+        .failure {
+            background: #e74c3c;
+            box-shadow: 0 0 20px red;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Machine Status Dashboard</h1>
+    <div id="statusIndicator" class="status-box normal">SYSTEM ONLINE</div>
+    <div style="background: white; display: inline-block; padding: 20px; border-radius: 10px;">
+        <input type="text" id="temp" placeholder="Temperature"> <br>
+        <input type="text" id="vib" placeholder="Vibration"> <br>
+        <input type="text" id="pres" placeholder="Pressure (Try 'ERR')"> <br>
+        <button onclick="checkMachine()">Run Prediction</button>
+    </div>
+    <p id="details"></p>
+
+    <script>
+        async function checkMachine() {
+            const data = {
+                temperature: document.getElementById('temp').value,
+                vibration: document.getElementById('vib').value,
+                pressure: document.getElementById('pres').value
+            };
+            const response = await fetch('http://127.0.0.1:8000/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            const indicator = document.getElementById('statusIndicator');
+
+            indicator.innerText = result.prediction.toUpperCase();
+            indicator.className = result.prediction === "Machine Failure" ? "status-box failure" : "status-box normal";
+            document.getElementById('details').innerText = `Failure Probability: ${(result.probability_of_failure * 100).toFixed(2)}%`;
+        }
+    </script>
+</body>
+
+</html>
